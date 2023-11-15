@@ -1,0 +1,87 @@
+---
+title: "《交通数据应用与分析》R语言——Assignment1"
+author: "2310826   刘思劲"
+date: "2023-11-15"
+output:
+  word_document: default
+  html_document: default
+---
+
+## 1、Using the iri dateset
+
+**Question1:**Get a subset with STATE_CODE 6 and SHRP_ID starting with 050
+
+```{r Question1.1,warning = FALSE}
+iri <- read.csv("D:/Users/Lenovo/Desktop/R语言/data-assignment/LTPP/iri.csv")
+iri_subset <- subset(iri,STATE_CODE == 6 & substr(SHRP_ID,1,3)=='050')
+iri_subset[c(0:10),]
+```
+
+**Question2:**Obtain the summary statistics of IRI of each section: min, max, and mean
+
+```{r Question1.2,warning = FALSE}
+library(dplyr)
+iri_grouped<- iri %>%group_by(STATE_CODE,SHRP_ID) %>%
+                    summarize(iri_max = max(IRI),
+                              iri_min = min(IRI),
+                              iri_mean = mean(IRI))
+iri_grouped[c(0:10),]
+```
+
+**Question3:**Sort the summarized data by the averaged IRI in a descending order (report results for one section only)
+
+```{r Question1.3,warning = FALSE}
+iri_grouped[order(iri_grouped$iri_mean,decreasing = T),]
+```
+
+**Question4:**Generate a scatter plot for the averaged IRI against the time for a selected section, and then give your interpretation of the plot:
+
+```{r Question1.4,warning = FALSE}
+library(tidyr)
+iri_sub1<- subset(iri,STATE_CODE == 6 & SHRP_ID == "0506")
+iri_sub1_gp <- iri_sub1 %>%group_by(VISIT_DATE) %>%
+                            summarise(iri_mean = mean(IRI,na.rm = T))
+iri_sub1_gp <- separate(iri_sub1_gp,VISIT_DATE,c("DATE","TIME"),sep=",") %>%
+                  mutate(DATE = as.Date(DATE,"%m/%d/%y"))
+time<-iri_sub1_gp$DATE
+iri_mean<-iri_sub1_gp$iri_mean
+plot(time,iri_mean)
+```
+
+如图所示为“STATE_CODE=6”且“SHRP_ID == "0506"”的模块中iri均值随年份变化的情况，有图可知随着时间的不断增长，iri_mean周期上也表现出增长规律，整体上来说，从93年以来整体上体现出增长的规律。
+
+## 2、Using the CRSS datasets in 2017
+
+**Question1:**Get the intersection of the datasets accident and person
+
+```{r Question2.1,warning = FALSE}
+accident <- read.csv("D:/Users/Lenovo/Desktop/R语言/data-assignment/CRSS/ACCIDENT.csv")
+person <- read.csv("D:/Users/Lenovo/Desktop/R语言/data-assignment/CRSS/PERSON.csv")
+vehicle <- read.csv("D:/Users/Lenovo/Desktop/R语言/data-assignment/CRSS/VEHICLE.csv")
+intersect(colnames(accident),colnames(person))
+```
+
+**Question2:**Tabulate the total number of observations in each injury severity (INJ_SEV)
+```{r Question2.2,warning = FALSE}
+injury_severity <- person %>%
+group_by(INJ_SEV) %>%
+summarize(count = n())
+injury_severity
+```
+
+**Question3:** Merge the accident dataset with the vehicle dataset, and report the dimension of your results and number of missing values in one variable of the right dataset
+```{r Question2.3,warning = FALSE}
+lj <- left_join(accident,vehicle)
+dim(lj)
+sum(is.na(lj))
+
+```
+
+## 2、Push your homework to a git repository
+如图所示为将“.csv”数据文件以及“.rmd”文件push至github的截图，链接为：
+
+knitr::include_graphics("C:\\Users\\77925\\Desktop\\知乎图标.png")
+
+
+
+
